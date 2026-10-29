@@ -1,20 +1,36 @@
-name: Build APK
-on: [push, workflow_dispatch]
+name: Build Clean Launcher
+
+on:
+  push:
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract Android project
+        run: unzip CleanLauncher-NSStudios.zip
+
+      - name: Build release bundle
+        working-directory: app-source/CleanLauncher
+        run: gradle bundleRelease
+
+      - name: Upload release bundle
+        uses: actions/upload-artifact@v4
         with:
-          gradle-version: 8.9
-      - run: unzip CleanLauncher.zip
-      - run: cd CleanLauncher && gradle assembleDebug
-      - uses: actions/upload-artifact@v4
-        with:
-          name: CleanLauncher-APK
-          path: CleanLauncher/app/build/outputs/apk/debug/app-debug.apk
+          name: CleanLauncher-AAB
+          path: app-source/CleanLauncher/app/build/outputs/bundle/release/*.aab
+          
